@@ -1,12 +1,39 @@
 {
   "name": "ngx-flatpicker",
-  "version": "0.0.1",
+  "version": "15.0.0",
   "peerDependencies": {
     "@angular/common": "^15.2.0",
     "@angular/core": "^15.2.0"
   },
   "dependencies": {
+    "flatpickr": "^4.6.13",
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mustafaer/ngx-flatpicker.git"
+  },
+  "url": "https://github.com/mustafaer/ngx-flatpicker/issues",
+  "email": "mustafaerpro@gmail.com",
+  "author": "Mustafa ER",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "angular15",
+    "public",
+    "flatpicker",
+    "datetime",
+    "view"
+  ],
+  "funding": [
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/mustafaer"
+    },
+    {
+      "type": "buymeacoffee",
+      "url": "https://www.buymeacoffee.com/mustafaer"
+    }
+  ]
 }
