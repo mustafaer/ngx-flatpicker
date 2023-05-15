@@ -2,6 +2,7 @@
  * Public API Surface of ngx-flatpicker
  */
 
-export * from './lib/ngx-flatpicker.service';
-export * from './lib/ngx-flatpicker.component';
-export * from './lib/ngx-flatpicker.module';
+export {NgxFlatpickrComponent} from './lib/ngx-flatpicker.component';
+export {NgxFlatpickrDirective} from './lib/flatpicker.directive';
+export {FlatpickrEvent} from './lib/flatpicker-event.interface';
+export {FlatpickrOptions} from './lib/flatpicker-options.interface';
