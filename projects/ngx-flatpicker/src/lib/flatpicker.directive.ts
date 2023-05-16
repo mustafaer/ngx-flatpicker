@@ -8,7 +8,7 @@ import {FlatpickrEvent} from './flatpicker-event.interface';
 import {FlatpickrInstance} from './flatpicker-instance';
 import {FlatpickrOptions} from './flatpicker-options.interface';
 
-@Directive({selector: '[flatpickr]', exportAs: 'ng2-flatpickr', standalone: true})
+@Directive({selector: '[flatpickr]', exportAs: 'ngx-flatpickr'})
 export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, OnChanges {
     /**
      * The flatpickr configuration as a single object of values.

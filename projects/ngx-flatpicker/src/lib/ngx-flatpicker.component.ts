@@ -2,22 +2,16 @@ import {Component, ViewChild, AfterViewInit, forwardRef, Input, OnChanges, Simpl
 import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {FlatpickrOptions} from './flatpicker-options.interface';
 
-declare var require: any;
-
-if (typeof window !== 'undefined') {
-    require('flatpickr');
-}
 
 @Component({
     selector: 'ngx-flatpickr',
     template: `
-        <div class="ng2-flatpickr-input-container" #flatpickr>
-            <input *ngIf="!hideButton" class="ng2-flatpickr-input {{ addClass }}" [placeholder]="placeholder"
+        <div class="ngx-flatpickr-input-container" #flatpickr>
+            <input *ngIf="!hideButton" class="ngx-flatpickr-input {{ addClass }}" [placeholder]="placeholder"
                    [tabindex]="tabindex" type="text" (focus)="onFocus($event)" data-input>
             <ng-content></ng-content>
         </div>
     `,
-    standalone: true,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
