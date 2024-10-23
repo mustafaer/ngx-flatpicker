@@ -1,9 +1,9 @@
 {
   "name": "ngx-flatpicker",
-  "version": "15.0.5",
+  "version": "16.0.0",
   "peerDependencies": {
-    "@angular/common": "^15.2.0",
-    "@angular/core": "^15.2.0"
+    "@angular/common": "^16.2.12",
+    "@angular/core": "^16.2.12"
   },
   "dependencies": {
     "flatpickr": "^4.6.13",
@@ -20,7 +20,6 @@
   "license": "MIT",
   "keywords": [
     "angular",
-    "angular15",
     "public",
     "flatpicker",
     "datetime",
