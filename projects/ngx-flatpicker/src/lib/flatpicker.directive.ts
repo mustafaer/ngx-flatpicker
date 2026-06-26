@@ -1,6 +1,6 @@
 import {
     AfterViewInit, Directive, ElementRef, OnDestroy, OnInit,
-    Renderer2, SimpleChanges, OnChanges, inject, input, output
+    Renderer2, inject, input, output, effect, signal
 } from '@angular/core';
 import {ControlContainer, FormControl, NgControl} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -18,7 +18,7 @@ import flatpickr from 'flatpickr';
         '(dblclick)': 'onClick()'
     }
 })
-export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, OnChanges {
+export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit {
     /**
      * The flatpickr configuration as a single object of values.
      *
@@ -212,11 +212,74 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
     protected flatpickr!: FlatpickrInstance;
     protected resolvedOptions: FlatpickrOptions = {};
     protected formControlListener?: Subscription;
+    protected isInitialized = signal(false);
 
     protected parent = inject(ControlContainer, { optional: true });
     protected ngControl = inject(NgControl, { optional: true, self: true });
     protected element = inject(ElementRef);
     protected renderer = inject(Renderer2);
+
+    constructor() {
+        effect(() => {
+            if (!this.isInitialized()) return;
+            const options = this.flatpickrOptions();
+            for (const optionName in options) {
+                if (options.hasOwnProperty(optionName)) {
+                    this.flatpickr.set(optionName as any, (options as any)[optionName]);
+                }
+            }
+        });
+
+        effect(() => {
+            if (!this.isInitialized()) return;
+
+            const optionMap: { [key: string]: any } = {
+                altFormat: this.flatpickrAltFormat(),
+                altInput: this.flatpickrAltInput(),
+                altInputClass: this.flatpickrAltInputClass(),
+                allowInput: this.flatpickrAllowInput(),
+                appendTo: this.flatpickrAppendTo(),
+                clickOpens: this.flatpickrClickOpens(),
+                dateFormat: this.flatpickrDateFormat(),
+                defaultDate: this.flatpickrDefaultDate(),
+                disable: this.flatpickrDisable(),
+                disableMobile: this.flatpickrDisableMobile(),
+                enable: this.flatpickrEnable(),
+                enableTime: this.flatpickrEnableTime(),
+                enableSeconds: this.flatpickrEnableSeconds(),
+                hourIncrement: this.flatpickrHourIncrement(),
+                inline: this.flatpickrInline(),
+                locale: this.flatpickrLocale(),
+                maxDate: this.flatpickrMaxDate(),
+                minDate: this.flatpickrMinDate(),
+                minuteIncrement: this.flatpickrMinuteIncrement(),
+                mode: this.flatpickrMode(),
+                nextArrow: this.flatpickrNextArrow(),
+                noCalendar: this.flatpickrNoCalendar(),
+                parseDate: this.flatpickrParseDate(),
+                prevArrow: this.flatpickrPrevArrow(),
+                shorthandCurrentMonth: this.flatpickrShorthandCurrentMonth(),
+                static: this.flatpickrStatic(),
+                time_24hr: this.flatpickrTime_24hr(),
+                utc: this.flatpickrUtc(),
+                weekNumbers: this.flatpickrWeekNumbers(),
+                wrap: this.flatpickrWrap()
+            };
+
+            for (const optionName in optionMap) {
+                const val = optionMap[optionName];
+                if (val !== undefined) {
+                    this.flatpickr.set(optionName as any, val);
+                }
+            }
+
+            const altInputVal = this.flatpickrAltInput();
+            const placeholderVal = this.placeholder();
+            if (altInputVal && placeholderVal && this.flatpickr.altInput) {
+                this.flatpickr.altInput.setAttribute('placeholder', placeholderVal);
+            }
+        });
+    }
 
     /** Allow access properties using index notation */
     [key: string]: any;
@@ -250,6 +313,8 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         }
 
         this.flatpickr = <FlatpickrInstance>flatpickr(nativeElement, this.resolvedOptions);
+
+        this.isInitialized.set(true);
 
         this.setupControlSubscription();
     }
@@ -292,73 +357,6 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
                         });
                     }
                 });
-        }
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (!this.flatpickr) {
-            return;
-        }
-
-        const altInputVal = this.flatpickrAltInput();
-        if (altInputVal
-            && changes.hasOwnProperty('placeholder')
-            && changes['placeholder'].currentValue) {
-            if (this.flatpickr.altInput) {
-                this.flatpickr.altInput.setAttribute('placeholder', changes['placeholder'].currentValue);
-            }
-        }
-
-        // Handle updates to the entire flatpickrOptions config object
-        if (changes.hasOwnProperty('flatpickrOptions') && changes['flatpickrOptions'].currentValue) {
-            const newOptions = changes['flatpickrOptions'].currentValue;
-            for (const optionName in newOptions) {
-                if (newOptions.hasOwnProperty(optionName)) {
-                    this.flatpickr.set(optionName as any, newOptions[optionName]);
-                }
-            }
-        }
-
-        // Map inputs to option names
-        const optionMap: { [key: string]: string } = {
-            flatpickrAltFormat: 'altFormat',
-            flatpickrAltInput: 'altInput',
-            flatpickrAltInputClass: 'altInputClass',
-            flatpickrAllowInput: 'allowInput',
-            flatpickrAppendTo: 'appendTo',
-            flatpickrClickOpens: 'clickOpens',
-            flatpickrDateFormat: 'dateFormat',
-            flatpickrDefaultDate: 'defaultDate',
-            flatpickrDisable: 'disable',
-            flatpickrDisableMobile: 'disableMobile',
-            flatpickrEnable: 'enable',
-            flatpickrEnableTime: 'enableTime',
-            flatpickrEnableSeconds: 'enableSeconds',
-            flatpickrHourIncrement: 'hourIncrement',
-            flatpickrInline: 'inline',
-            flatpickrLocale: 'locale',
-            flatpickrMaxDate: 'maxDate',
-            flatpickrMinDate: 'minDate',
-            flatpickrMinuteIncrement: 'minuteIncrement',
-            flatpickrMode: 'mode',
-            flatpickrNextArrow: 'nextArrow',
-            flatpickrNoCalendar: 'noCalendar',
-            flatpickrParseDate: 'parseDate',
-            flatpickrPrevArrow: 'prevArrow',
-            flatpickrShorthandCurrentMonth: 'shorthandCurrentMonth',
-            flatpickrStatic: 'static',
-            flatpickrTime_24hr: 'time_24hr',
-            flatpickrUtc: 'utc',
-            flatpickrWeekNumbers: 'weekNumbers',
-            flatpickrWrap: 'wrap'
-        };
-
-        for (const changeKey in changes) {
-            if (changes.hasOwnProperty(changeKey) && optionMap[changeKey]) {
-                const optionName = optionMap[changeKey];
-                const currentValue = changes[changeKey].currentValue;
-                this.flatpickr.set(optionName as any, currentValue);
-            }
         }
     }
 

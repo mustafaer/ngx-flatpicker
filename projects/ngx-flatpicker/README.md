@@ -2,16 +2,16 @@
 
 [![npm version](https://img.shields.io/npm/v/ngx-flatpicker.svg)](https://www.npmjs.com/package/ngx-flatpicker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Angular Compatibility](https://img.shields.io/badge/Angular-21+-red.svg)](#compatibility)
+[![Angular Compatibility](https://img.shields.io/badge/Angular-22+-red.svg)](#compatibility)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
 
-A premium, high-performance **Flatpickr date-time picker integration for Angular 21+**. Re-engineered from the ground up to utilize **100% native Angular 21 features**, including **Signal Inputs (`input()`)**, **Signal Outputs (`output()`)**, and the **`inject()` dependency injection model**, while maintaining complete compatibility with **Angular Reactive Forms (`ControlValueAccessor`)**.
+A premium, high-performance **Flatpickr date-time picker integration for Angular 22+**. Re-engineered from the ground up to utilize **100% native Angular 22 features**, including **Signal Inputs (`input()`)**, **Signal Outputs (`output()`)**, and the **`inject()` dependency injection model**, while maintaining complete compatibility with **Angular Reactive Forms (`ControlValueAccessor`)**.
 
 ---
 
 ## 🌟 Features
 
-- **Angular 21+ Signal Architecture**: Completely built on Signal-based reactive data flows for optimal change detection performance.
+- **Angular 22+ Signal Architecture**: Completely built on Signal-based reactive data flows for optimal change detection performance.
 - **Reactive Forms & `ngModel` Integration**: Seamless CVA binding for robust form control synchronization.
 - **Dynamic Configuration Updates**: Modify pickers on-the-fly via reactive inputs.
 - **Dual-UI Paradigms**:
@@ -26,7 +26,7 @@ A premium, high-performance **Flatpickr date-time picker integration for Angular
 
 | ngx-flatpicker | Angular Version | Flatpickr Version | TypeScript Version |
 | :------------- | :-------------- | :---------------- | :----------------- |
-| **`v21.x.x`**  | `>= 21.0.0`     | `^4.6.13`         | `>= 5.9.0`         |
+| **`v22.x.x`**  | `>= 22.0.0`     | `^4.6.13`         | `>= 5.9.0`         |
 
 ---
 

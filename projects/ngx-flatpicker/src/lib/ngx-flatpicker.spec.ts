@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, ViewChild, signal} from '@angular/core';
 import {ComponentFixture, TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
@@ -10,18 +10,18 @@ import {FlatpickrOptions} from './flatpicker-options.interface';
 @Component({
     template: `
         <form [formGroup]="testForm">
-            <input type="text" flatpickr [flatpickr]="options" [formControlName]="'dateControl'" [placeholder]="placeholder">
+            <input type="text" flatpickr [flatpickr]="options()" [formControlName]="'dateControl'" [placeholder]="placeholder">
         </form>
     `,
     standalone: true,
     imports: [ReactiveFormsModule, NgxFlatpickrDirective]
 })
 class DirectiveHostComponent {
-    options: FlatpickrOptions = {
+    options = signal<FlatpickrOptions>({
         enableTime: false,
         dateFormat: 'Y-m-d',
         wrap: false
-    };
+    });
     placeholder = 'Select date';
     testForm = new FormGroup({
         dateControl: new FormControl()
@@ -102,9 +102,10 @@ describe('NgxFlatpicker Tests', () => {
             const fp = (inputEl as any)._flatpickr;
             expect(fp.config.enableTime).toBe(false);
 
-            component.options = { ...component.options, enableTime: true };
+            component.options.set({ ...component.options(), enableTime: true });
             fixture.detectChanges();
             tick();
+            fixture.detectChanges();
 
             expect(fp.config.enableTime).toBe(true);
         }));
