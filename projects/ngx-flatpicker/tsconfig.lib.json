@@ -9,7 +9,7 @@
     "types": []
   },
   "files": [
-    "src/public_api.ts"
+    "src/public-api.ts"
   ],
   "exclude": [
     "**/*.spec.ts"

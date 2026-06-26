@@ -1,14 +1,20 @@
 import {
     AfterViewInit, Directive, ElementRef, EventEmitter, HostListener, Input,
-    OnDestroy, OnInit, Output, Renderer2, SimpleChanges, OnChanges
+    OnDestroy, OnInit, Output, Renderer2, SimpleChanges, OnChanges, Optional, Self
 } from '@angular/core';
 import {ControlContainer, FormControl, NgControl} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {FlatpickrEvent} from './flatpicker-event.interface';
 import {FlatpickrInstance} from './flatpicker-instance';
 import {FlatpickrOptions} from './flatpicker-options.interface';
+import {Hook} from 'flatpickr/dist/types/options';
+import flatpickr from 'flatpickr';
 
-@Directive({selector: '[flatpickr]', exportAs: 'ngx-flatpickr'})
+@Directive({
+    selector: '[flatpickr]',
+    exportAs: 'ngx-flatpickr',
+    standalone: true
+})
 export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, OnChanges {
     /**
      * The flatpickr configuration as a single object of values.
@@ -274,16 +280,16 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
      * Default:  null
      */
     @Output('onReady') public flatpickrOnReady: EventEmitter<FlatpickrEvent> = new EventEmitter();
-    protected globalOnChange!: Function;
-    protected globalOnClose!: Function;
-    protected globalOnOpen!: Function;
-    protected globalOnReady!: Function;
+    protected globalOnChange?: Hook | Hook[];
+    protected globalOnClose?: Hook | Hook[];
+    protected globalOnOpen?: Hook | Hook[];
+    protected globalOnReady?: Hook | Hook[];
     protected flatpickr!: FlatpickrInstance;
-    protected formControlListener!: Subscription;
+    protected formControlListener?: Subscription;
 
     constructor(
-        protected parent: ControlContainer,
-        protected ngControl: NgControl,
+        @Optional() protected parent: ControlContainer,
+        @Optional() @Self() protected ngControl: NgControl,
         protected element: ElementRef,
         protected renderer: Renderer2
     ) {
@@ -292,15 +298,19 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
     /** Allow access properties using index notation */
     [key: string]: any;
 
-    get control(): FormControl {
-        // @ts-ignore
-        return this.parent ? this.parent.formDirective.getControl(this.ngControl) : null;
+    get control(): FormControl | null {
+        if (!this.ngControl) {
+            return null;
+        }
+        return (this.ngControl.control || (this.parent && (this.parent as any).formDirective?.getControl(this.ngControl))) as FormControl;
     }
 
     /** Allow double-clicking on the control to open/close it. */
     @HostListener('dblclick')
     public onClick() {
-        this.flatpickr.toggle();
+        if (this.flatpickr) {
+            this.flatpickr.toggle();
+        }
     }
 
     ngAfterViewInit() {
@@ -317,15 +327,115 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
             nativeElement = nativeElement.parentNode;
         }
 
-        this.flatpickr = <FlatpickrInstance>nativeElement.flatpickr(this.flatpickrOptions);
+        this.flatpickr = <FlatpickrInstance>flatpickr(nativeElement, this.flatpickrOptions);
+
+        this.setupControlSubscription();
+    }
+
+    protected setupControlSubscription() {
+        const control = this.control;
+        if (control) {
+            // Apply initial control value to flatpickr if present
+            if (control.value !== undefined && control.value !== null && control.value !== '') {
+                this.flatpickr.setDate(control.value, false);
+            }
+
+            this.formControlListener = control.valueChanges
+                .subscribe((value: any) => {
+                    if (this.flatpickr) {
+                        if (value === undefined || value === null || value === '') {
+                            if (this.flatpickr.selectedDates.length > 0) {
+                                this.flatpickr.clear();
+                            }
+                        } else {
+                            const currentDate = this.flatpickr.selectedDates[0];
+                            const newDate = value instanceof Date ? value : new Date('' + value);
+                            if (!isNaN(newDate.getTime())) {
+                                if (!currentDate || currentDate.getTime() !== newDate.getTime()) {
+                                    this.flatpickr.setDate(newDate, false);
+                                }
+                            }
+                        }
+                    }
+
+                    if (value && !(value instanceof Date)) {
+                        // Quietly update the value of the form control to be a
+                        // Date object. This avoids any external subscribers
+                        // from being notified a second time.
+                        control.setValue(new Date('' + value), {
+                            onlySelf: true,
+                            emitEvent: false,
+                            emitModelToViewChange: false,
+                            emitViewToModelChange: false
+                        });
+                    }
+                });
+        }
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.flatpickr
-            && this.flatpickrAltInput
+        if (!this.flatpickr) {
+            return;
+        }
+
+        if (this.flatpickrAltInput
             && changes.hasOwnProperty('placeholder')
             && changes['placeholder'].currentValue) {
-            this.flatpickr.altInput.setAttribute('placeholder', changes['placeholder'].currentValue);
+            if (this.flatpickr.altInput) {
+                this.flatpickr.altInput.setAttribute('placeholder', changes['placeholder'].currentValue);
+            }
+        }
+
+        // Handle updates to the entire flatpickrOptions config object
+        if (changes.hasOwnProperty('flatpickrOptions') && changes['flatpickrOptions'].currentValue) {
+            const newOptions = changes['flatpickrOptions'].currentValue;
+            for (const optionName in newOptions) {
+                if (newOptions.hasOwnProperty(optionName)) {
+                    this.flatpickr.set(optionName as any, newOptions[optionName]);
+                }
+            }
+        }
+
+        // Map inputs to option names
+        const optionMap: { [key: string]: string } = {
+            flatpickrAltFormat: 'altFormat',
+            flatpickrAltInput: 'altInput',
+            flatpickrAltInputClass: 'altInputClass',
+            flatpickrAllowInput: 'allowInput',
+            flatpickrAppendTo: 'appendTo',
+            flatpickrClickOpens: 'clickOpens',
+            flatpickrDateFormat: 'dateFormat',
+            flatpickrDefaultDate: 'defaultDate',
+            flatpickrDisable: 'disable',
+            flatpickrDisableMobile: 'disableMobile',
+            flatpickrEnable: 'enable',
+            flatpickrEnableTime: 'enableTime',
+            flatpickrEnableSeconds: 'enableSeconds',
+            flatpickrHourIncrement: 'hourIncrement',
+            flatpickrInline: 'inline',
+            flatpickrLocale: 'locale',
+            flatpickrMaxDate: 'maxDate',
+            flatpickrMinDate: 'minDate',
+            flatpickrMinuteIncrement: 'minuteIncrement',
+            flatpickrMode: 'mode',
+            flatpickrNextArrow: 'nextArrow',
+            flatpickrNoCalendar: 'noCalendar',
+            flatpickrParseDate: 'parseDate',
+            flatpickrPrevArrow: 'prevArrow',
+            flatpickrShorthandCurrentMonth: 'shorthandCurrentMonth',
+            flatpickrStatic: 'static',
+            flatpickrTime_24hr: 'time_24hr',
+            flatpickrUtc: 'utc',
+            flatpickrWeekNumbers: 'weekNumbers',
+            flatpickrWrap: 'wrap'
+        };
+
+        for (const changeKey in changes) {
+            if (changes.hasOwnProperty(changeKey) && optionMap[changeKey]) {
+                const optionName = optionMap[changeKey];
+                const currentValue = changes[changeKey].currentValue;
+                this.flatpickr.set(optionName as any, currentValue);
+            }
         }
     }
 
@@ -336,28 +446,17 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
 
         if (this.formControlListener) {
             this.formControlListener.unsubscribe();
-            // @ts-ignore
-            this.formControlListener = undefined;
         }
-
-        // @ts-ignore
-        this.flatpickrOnChange = undefined;
-        // @ts-ignore
-        this.flatpickrOnClose = undefined;
-        // @ts-ignore
-        this.flatpickrOnOpen = undefined;
-        // @ts-ignore
-        this.flatpickrOnReady = undefined;
     }
 
     ngOnInit() {
-        // @ts-ignore
+        if (!this.flatpickrOptions) {
+            this.flatpickrOptions = {};
+        }
+
         this.globalOnChange = this.flatpickrOptions.onChange;
-        // @ts-ignore
         this.globalOnClose = this.flatpickrOptions.onClose;
-        // @ts-ignore
         this.globalOnOpen = this.flatpickrOptions.onOpen;
-        // @ts-ignore
         this.globalOnReady = this.flatpickrOptions.onReady;
 
         this.flatpickrOptions = {
@@ -399,28 +498,9 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
 
         // Remove unset properties
         Object.keys(this.flatpickrOptions).forEach((key: string) => {
-            (this.flatpickrOptions[key] === undefined) &&
-            delete this.flatpickrOptions[key];
+            ((this.flatpickrOptions as any)[key] === undefined) &&
+            delete (this.flatpickrOptions as any)[key];
         });
-
-        if (this.control) {
-            this.formControlListener = this.control.valueChanges
-                .subscribe((value: any) => {
-                    if (!(value instanceof Date)) {
-                        // Quietly update the value of the form control to be a
-                        // Date object. This avoids any external subscribers
-                        // from being notified a second time (once for the user
-                        // initiated event, and once for our conversion to
-                        // Date()).
-                        this.control.setValue(new Date('' + value), {
-                            onlySelf: true,
-                            emitEvent: false,
-                            emitModelToViewChange: false,
-                            emitViewToModelChange: false
-                        });
-                    }
-                });
-        }
     }
 
     /**
@@ -433,12 +513,34 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
             dateStr: dateStr,
             instance: instance
         };
+
+        if (this.control) {
+            let value: any = null;
+            if (selectedDates && selectedDates.length > 0) {
+                if (this.flatpickrOptions.mode === 'multiple' || this.flatpickrOptions.mode === 'range') {
+                    value = selectedDates;
+                } else {
+                    value = selectedDates[0];
+                }
+            }
+            if (this.control.value !== value) {
+                this.control.setValue(value, {
+                    emitModelToViewChange: false
+                });
+            }
+        }
+
+        // Trigger native change and input events
+        if (this.element && this.element.nativeElement) {
+            this.renderer.setProperty(this.element.nativeElement, 'value', dateStr);
+            this.element.nativeElement.dispatchEvent(new Event('input', { bubbles: true }));
+            this.element.nativeElement.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
         if (this.flatpickrOnChange) {
             this.flatpickrOnChange.emit(event);
         }
-        if (this.globalOnChange) {
-            this.globalOnChange(event);
-        }
+        this.executeGlobalHook(this.globalOnChange, event);
     }
 
     /**
@@ -454,9 +556,7 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         if (this.flatpickrOnClose) {
             this.flatpickrOnClose.emit(event);
         }
-        if (this.globalOnClose) {
-            this.globalOnClose(event);
-        }
+        this.executeGlobalHook(this.globalOnClose, event);
     }
 
     /**
@@ -472,9 +572,7 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         if (this.flatpickrOnOpen) {
             this.flatpickrOnOpen.emit(event);
         }
-        if (this.globalOnOpen) {
-            this.globalOnOpen(event);
-        }
+        this.executeGlobalHook(this.globalOnOpen, event);
     }
 
     /**
@@ -490,8 +588,17 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         if (this.flatpickrOnReady) {
             this.flatpickrOnReady.emit(event);
         }
-        if (this.globalOnReady) {
-            this.globalOnReady(event);
+        this.executeGlobalHook(this.globalOnReady, event);
+    }
+
+    protected executeGlobalHook(hook: Hook | Hook[] | undefined, event: FlatpickrEvent) {
+        if (!hook) {
+            return;
+        }
+        if (Array.isArray(hook)) {
+            hook.forEach(fn => (fn as any)(event));
+        } else {
+            (hook as any)(event);
         }
     }
 
@@ -505,8 +612,8 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
 
         if (typeof this[localName] !== 'undefined') {
             return this[localName];
-        } else if (typeof this.flatpickrOptions[option] !== 'undefined') {
-            return this.flatpickrOptions[option];
+        } else if (this.flatpickrOptions && typeof (this.flatpickrOptions as any)[option] !== 'undefined') {
+            return (this.flatpickrOptions as any)[option];
         } else {
             return defaultValue;
         }

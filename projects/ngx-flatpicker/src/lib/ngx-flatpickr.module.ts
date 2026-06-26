@@ -5,8 +5,8 @@ import {NgxFlatpickrComponent} from "./ngx-flatpicker.component";
 import {NgxFlatpickrDirective} from "./flatpicker.directive";
 
 @NgModule({
-    imports: [CommonModule],
-    declarations: [
+    imports: [
+        CommonModule,
         NgxFlatpickrComponent,
         NgxFlatpickrDirective
     ],
