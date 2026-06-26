@@ -1,6 +1,6 @@
 import {
-    AfterViewInit, Directive, ElementRef, EventEmitter, HostListener, Input,
-    OnDestroy, OnInit, Output, Renderer2, SimpleChanges, OnChanges, Optional, Self
+    AfterViewInit, Directive, ElementRef, OnDestroy, OnInit,
+    Renderer2, SimpleChanges, OnChanges, inject, input, output
 } from '@angular/core';
 import {ControlContainer, FormControl, NgControl} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -13,7 +13,10 @@ import flatpickr from 'flatpickr';
 @Directive({
     selector: '[flatpickr]',
     exportAs: 'ngx-flatpickr',
-    standalone: true
+    standalone: true,
+    host: {
+        '(dblclick)': 'onClick()'
+    }
 })
 export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, OnChanges {
     /**
@@ -21,279 +24,199 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
      *
      * See https://chmln.github.io/flatpickr/options/ for full list.
      */
-    @Input('flatpickr') public flatpickrOptions!: FlatpickrOptions;
+    flatpickrOptions = input<FlatpickrOptions>({}, { alias: 'flatpickr' });
 
     /**
      * Placeholder for input field.
-     *
-     * Default:  null
      */
-    @Input('placeholder') public placeholder!: string;
+    placeholder = input<string | undefined>(undefined, { alias: 'placeholder' });
 
     /**
      * Exactly the same as date format, but for the altInput field.
-     *
-     * Default:  "F j, Y"
      */
-    @Input('altFormat') public flatpickrAltFormat!: string;
+    flatpickrAltFormat = input<string | undefined>(undefined, { alias: 'altFormat' });
 
     /**
      * Show the user a readable date (as per altFormat), but return something
      * totally different to the server.
-     *
-     * Default:  false
      */
-    @Input('altInput') public flatpickrAltInput!: boolean;
+    flatpickrAltInput = input<boolean | undefined>(undefined, { alias: 'altInput' });
 
     /**
      * This class will be added to the input element created by the altInput
      * option.
-     *
-     * Default:  ""
      */
-    @Input('altInputClass') public flatpickrAltInputClass!: string;
+    flatpickrAltInputClass = input<string | undefined>(undefined, { alias: 'altInputClass' });
 
     /**
      * Allows the user to enter a date directly input the input field. By
      * default, direct entry is disabled.
-     *
-     * Default:  false
      */
-    @Input('allowInput') public flatpickrAllowInput!: boolean;
+    flatpickrAllowInput = input<boolean | undefined>(undefined, { alias: 'allowInput' });
 
     /**
      * Instead of body, appends the calendar to the specified node instead.
-     *
-     * Default:  null
      */
-    @Input('appendTo') public flatpickrAppendTo: any; // HTMLElement
+    flatpickrAppendTo = input<any | undefined>(undefined, { alias: 'appendTo' }); // HTMLElement
 
     /**
      * Whether clicking on the input should open the picker.
-     * You could disable this if you wish to open the calendar manually
-     * with.open().
-     *
-     * Default:  true
      */
-    @Input('clickOpens') public flatpickrClickOpens!: boolean;
+    flatpickrClickOpens = input<boolean | undefined>(undefined, { alias: 'clickOpens' });
 
     /**
      * A string of characters which are used to define how the date will be
      * displayed in the input box.
-     * See https://chmln.github.io/flatpickr/formatting/ for supported tokens.
-     *
-     * Default:  "Y-m-d"
      */
-    @Input('dateFormat') public flatpickrDateFormat!: string;
+    flatpickrDateFormat = input<string | undefined>(undefined, { alias: 'dateFormat' });
 
     /**
      * Sets the initial selected date(s).
-     *
-     * If you're using {mode: "multiple"} or a range calendar supply an Array of
-     * Date objects or an Array of date strings which follow your dateFormat.
-     *
-     * Otherwise, you can supply a single Date object or a date string.
-     *
-     * Default:  null
      */
-    @Input('defaultDate') public flatpickrDefaultDate!: string | Date;
+    flatpickrDefaultDate = input<string | Date | undefined>(undefined, { alias: 'defaultDate' });
 
     /**
      * Disable an array of specific dates, date ranges, or functions to disable
-     * dates. See https://chmln.github.io/flatpickr/examples/#disabling-specific-dates
-     *
-     * Default:  []
+     * dates.
      */
-    @Input('disable') public flatpickrDisable!: string[] | Date[];
+    flatpickrDisable = input<string[] | Date[] | undefined>(undefined, { alias: 'disable' });
 
     /**
-     * Set disableMobile to true to always use the non-native picker. By
-     * default, Flatpickr utilizes native datetime widgets unless certain
-     * options (e.g. disable) are used.
-     *
-     * Default:  false
+     * Set disableMobile to true to always use the non-native picker.
      */
-    @Input('disableMobile') public flatpickrDisableMobile!: boolean;
+    flatpickrDisableMobile = input<boolean | undefined>(undefined, { alias: 'disableMobile' });
 
     /**
      * Enable an array of specific dates, date ranges, or functions to enable
-     * dates. See https://chmln.github.io/flatpickr/examples/#disabling-all-dates-except-select-few
-     *
-     * Default:  []
+     * dates.
      */
-    @Input('enable') public flatpickrEnable!: string[] | Date[];
+    flatpickrEnable = input<string[] | Date[] | undefined>(undefined, { alias: 'enable' });
 
     /**
      * Enables time picker.
-     *
-     * Default:  false
      */
-    @Input('enableTime') public flatpickrEnableTime!: boolean;
+    flatpickrEnableTime = input<boolean | undefined>(undefined, { alias: 'enableTime' });
 
     /**
      * Enables seconds in the time picker.
-     *
-     * Default:  false
      */
-    @Input('enableSeconds') public flatpickrEnableSeconds!: boolean;
+    flatpickrEnableSeconds = input<boolean | undefined>(undefined, { alias: 'enableSeconds' });
 
     /**
      * Adjusts the step for the hour input (incl. scrolling).
-     *
-     * Default:  1
      */
-    @Input('hourIncrement') public flatpickrHourIncrement!: number;
+    flatpickrHourIncrement = input<number | undefined>(undefined, { alias: 'hourIncrement' });
 
     /**
      * Displays the calendar inline.
-     *
-     * Default:  false
      */
-    @Input('inline') public flatpickrInline!: boolean;
+    flatpickrInline = input<boolean | undefined>(undefined, { alias: 'inline' });
 
     /**
      * Use a specific locale for the flatpickr instance.
-     *
-     * Default:  null
      */
-    @Input('locale') public flatpickrLocale!: Object;
+    flatpickrLocale = input<Object | undefined>(undefined, { alias: 'locale' });
 
     /**
      * The maximum date that a user can pick to (inclusive).
-     *
-     * Default:  null
      */
-    @Input('maxDate') public flatpickrMaxDate!: string | Date;
+    flatpickrMaxDate = input<string | Date | undefined>(undefined, { alias: 'maxDate' });
 
     /**
      * The minimum date that a user can start picking from (inclusive).
-     *
-     * Default:  null
      */
-    @Input('minDate') public flatpickrMinDate!: string | Date;
+    flatpickrMinDate = input<string | Date | undefined>(undefined, { alias: 'minDate' });
 
     /**
      * Adjusts the step for the minute input (incl. scrolling).
-     *
-     * Default:  5
      */
-    @Input('minuteIncrement') public flatpickrMinuteIncrement!: number;
+    flatpickrMinuteIncrement = input<number | undefined>(undefined, { alias: 'minuteIncrement' });
 
     /**
      * "single", "multiple", or "range"
-     *
-     * Default:  "single"
      */
-    @Input('mode') public flatpickrMode!: string;
+    flatpickrMode = input<string | undefined>(undefined, { alias: 'mode' });
 
     /**
      * HTML for the arrow icon, used to switch months.
-     *
-     * Default:  ">"
      */
-    @Input('nextArrow') public flatpickrNextArrow!: string;
+    flatpickrNextArrow = input<string | undefined>(undefined, { alias: 'nextArrow' });
 
     /**
      * Hides the day selection in calendar. Use it along with enableTime to
      * create a time picker.
-     *
-     * Default:  false
      */
-    @Input('noCalendar') public flatpickrNoCalendar!: boolean;
+    flatpickrNoCalendar = input<boolean | undefined>(undefined, { alias: 'noCalendar' });
 
     /**
      * Function that expects a date string and must return a Date object.
-     *
-     * Default:  false
      */
-    @Input('parseDate') public flatpickrParseDate!: Function;
+    flatpickrParseDate = input<Function | undefined>(undefined, { alias: 'parseDate' });
 
     /**
      * HTML for the left arrow icon.
-     *
-     * Default:  "<"
      */
-    @Input('prevArrow') public flatpickrPrevArrow!: string;
+    flatpickrPrevArrow = input<string | undefined>(undefined, { alias: 'prevArrow' });
 
     /**
      * Show the month using the shorthand version (ie, Sep instead of September).
-     *
-     * Default:  false
      */
-    @Input('shorthandCurrentMonth') public flatpickrShorthandCurrentMonth!: boolean;
+    flatpickrShorthandCurrentMonth = input<boolean | undefined>(undefined, { alias: 'shorthandCurrentMonth' });
 
     /**
-     * Position the calendar inside the wrapper and next to the input element
-     * (Leave false unless you know what you're doing).
-     *
-     * Default:  false
+     * Position the calendar inside the wrapper and next to the input element.
      */
-    @Input('static') public flatpickrStatic!: boolean;
+    flatpickrStatic = input<boolean | undefined>(undefined, { alias: 'static' });
 
     /**
      * Displays time picker in 24 hour mode without AM/PM selection when enabled.
-     *
-     * Default:  false
      */
-    @Input('time_24hr') public flatpickrTime_24hr!: boolean;
+    flatpickrTime_24hr = input<boolean | undefined>(undefined, { alias: 'time_24hr' });
 
-    @Input('utc') public flatpickrUtc!: boolean;
+    flatpickrUtc = input<boolean | undefined>(undefined, { alias: 'utc' });
 
     /**
      * Enables display of week numbers in calendar.
-     *
-     * Default:  false
      */
-    @Input('weekNumbers') public flatpickrWeekNumbers!: boolean;
+    flatpickrWeekNumbers = input<boolean | undefined>(undefined, { alias: 'weekNumbers' });
 
     /**
      * Custom elements and input groups.
-     *
-     * Default:  false
      */
-    @Input('wrap') public flatpickrWrap!: boolean;
+    flatpickrWrap = input<boolean | undefined>(undefined, { alias: 'wrap' });
 
     /**
      * onChange gets triggered when the user selects a date, or changes the time on a selected date.
-     *
-     * Default:  null
      */
-    @Output('onChange') public flatpickrOnChange: EventEmitter<FlatpickrEvent> = new EventEmitter();
+    flatpickrOnChange = output<FlatpickrEvent>({ alias: 'onChange' });
 
     /**
      * onClose gets triggered when the calendar is closed.
-     *
-     * Default:  null
      */
-    @Output('onClose') public flatpickrOnClose: EventEmitter<FlatpickrEvent> = new EventEmitter();
+    flatpickrOnClose = output<FlatpickrEvent>({ alias: 'onClose' });
 
     /**
      * onOpen gets triggered when the calendar is opened.
-     *
-     * Default:  null
      */
-    @Output('onOpen') public flatpickrOnOpen: EventEmitter<FlatpickrEvent> = new EventEmitter();
+    flatpickrOnOpen = output<FlatpickrEvent>({ alias: 'onOpen' });
 
     /**
      * onReady gets triggered once the calendar is in a ready state.
-     *
-     * Default:  null
      */
-    @Output('onReady') public flatpickrOnReady: EventEmitter<FlatpickrEvent> = new EventEmitter();
+    flatpickrOnReady = output<FlatpickrEvent>({ alias: 'onReady' });
+
     protected globalOnChange?: Hook | Hook[];
     protected globalOnClose?: Hook | Hook[];
     protected globalOnOpen?: Hook | Hook[];
     protected globalOnReady?: Hook | Hook[];
     protected flatpickr!: FlatpickrInstance;
+    protected resolvedOptions: FlatpickrOptions = {};
     protected formControlListener?: Subscription;
 
-    constructor(
-        @Optional() protected parent: ControlContainer,
-        @Optional() @Self() protected ngControl: NgControl,
-        protected element: ElementRef,
-        protected renderer: Renderer2
-    ) {
-    }
+    protected parent = inject(ControlContainer, { optional: true });
+    protected ngControl = inject(NgControl, { optional: true, self: true });
+    protected element = inject(ElementRef);
+    protected renderer = inject(Renderer2);
 
     /** Allow access properties using index notation */
     [key: string]: any;
@@ -306,7 +229,6 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
     }
 
     /** Allow double-clicking on the control to open/close it. */
-    @HostListener('dblclick')
     public onClick() {
         if (this.flatpickr) {
             this.flatpickr.toggle();
@@ -322,12 +244,12 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
             throw 'Error: invalid input element specified';
         }
 
-        if (this.flatpickrOptions.wrap) {
+        if (this.resolvedOptions.wrap) {
             this.renderer.setAttribute(this.element.nativeElement, 'data-input', '');
             nativeElement = nativeElement.parentNode;
         }
 
-        this.flatpickr = <FlatpickrInstance>flatpickr(nativeElement, this.flatpickrOptions);
+        this.flatpickr = <FlatpickrInstance>flatpickr(nativeElement, this.resolvedOptions);
 
         this.setupControlSubscription();
     }
@@ -378,7 +300,8 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
             return;
         }
 
-        if (this.flatpickrAltInput
+        const altInputVal = this.flatpickrAltInput();
+        if (altInputVal
             && changes.hasOwnProperty('placeholder')
             && changes['placeholder'].currentValue) {
             if (this.flatpickr.altInput) {
@@ -450,16 +373,14 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
     }
 
     ngOnInit() {
-        if (!this.flatpickrOptions) {
-            this.flatpickrOptions = {};
-        }
+        const optionsVal = this.flatpickrOptions() || {};
 
-        this.globalOnChange = this.flatpickrOptions.onChange;
-        this.globalOnClose = this.flatpickrOptions.onClose;
-        this.globalOnOpen = this.flatpickrOptions.onOpen;
-        this.globalOnReady = this.flatpickrOptions.onReady;
+        this.globalOnChange = optionsVal.onChange;
+        this.globalOnClose = optionsVal.onClose;
+        this.globalOnOpen = optionsVal.onOpen;
+        this.globalOnReady = optionsVal.onReady;
 
-        this.flatpickrOptions = {
+        this.resolvedOptions = {
             altFormat: this.getOption('altFormat'),
             altInput: this.getOption('altInput'),
             altInputClass: this.getOption('altInputClass'),
@@ -497,9 +418,9 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         };
 
         // Remove unset properties
-        Object.keys(this.flatpickrOptions).forEach((key: string) => {
-            ((this.flatpickrOptions as any)[key] === undefined) &&
-            delete (this.flatpickrOptions as any)[key];
+        Object.keys(this.resolvedOptions).forEach((key: string) => {
+            ((this.resolvedOptions as any)[key] === undefined) &&
+            delete (this.resolvedOptions as any)[key];
         });
     }
 
@@ -517,7 +438,7 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         if (this.control) {
             let value: any = null;
             if (selectedDates && selectedDates.length > 0) {
-                if (this.flatpickrOptions.mode === 'multiple' || this.flatpickrOptions.mode === 'range') {
+                if (this.resolvedOptions.mode === 'multiple' || this.resolvedOptions.mode === 'range') {
                     value = selectedDates;
                 } else {
                     value = selectedDates[0];
@@ -610,12 +531,19 @@ export class NgxFlatpickrDirective implements AfterViewInit, OnDestroy, OnInit, 
         let localName = 'flatpickr' + option.substring(0, 1).toUpperCase()
             + option.substring(1);
 
-        if (typeof this[localName] !== 'undefined') {
-            return this[localName];
-        } else if (this.flatpickrOptions && typeof (this.flatpickrOptions as any)[option] !== 'undefined') {
-            return (this.flatpickrOptions as any)[option];
-        } else {
-            return defaultValue;
+        const signalProp = this[localName];
+        if (signalProp && typeof signalProp === 'function') {
+            const val = signalProp();
+            if (val !== undefined) {
+                return val;
+            }
         }
+
+        const optionsVal = this.flatpickrOptions();
+        if (optionsVal && typeof (optionsVal as any)[option] !== 'undefined') {
+            return (optionsVal as any)[option];
+        }
+
+        return defaultValue;
     }
 }
