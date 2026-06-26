@@ -5,13 +5,13 @@
 [![Angular Compatibility](https://img.shields.io/badge/Angular-18%20%7C%2019%20%7C%2020-red.svg)](#compatibility)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
 
-A modern, lightweight, and highly performant **Flatpickr wrapper for Angular 18/19+**. It provides both a standalone attribute directive and a standalone wrapper component with native **Reactive Forms (`ControlValueAccessor`)** support, dynamic configuration updates, and full mobile-responsive fallbacks.
+A modern, lightweight, and highly performant **Flatpickr wrapper for Angular 18/19/20+**. It provides both a standalone attribute directive and a standalone wrapper component with native **Reactive Forms (`ControlValueAccessor`)** support, dynamic configuration updates, and full mobile-responsive fallbacks.
 
 ---
 
 ## 🌟 Features
 
-- **Angular 18 & 19+ Ready**: Full support for Ivy compilation and standalone components/directives.
+- **Angular 18, 19 & 20+ Ready**: Full support for Ivy compilation and standalone components/directives.
 - **Reactive Forms & ngModel**: Seamless integration with Angular's Forms API (`formControlName`, `formControl`, `ngModel`).
 - **Flexible UI Integration**:
   - **Attribute Directive (`[flatpickr]`)**: Initialize flatpickr directly on standard `<input>` elements for minimal DOM weight and custom layout freedom.
@@ -26,7 +26,7 @@ A modern, lightweight, and highly performant **Flatpickr wrapper for Angular 18/
 
 | ngx-flatpicker | Angular Version | Flatpickr Version |
 | :------------- | :-------------- | :---------------- |
-| **`v19.x.x`**  | `>= 18.0.0`     | `^4.6.13`         |
+| **`v20.x.x`**  | `>= 18.0.0`     | `^4.6.13`         |
 
 ---
 
