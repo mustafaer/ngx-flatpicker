@@ -26,7 +26,7 @@ A modern, lightweight, and highly performant **Flatpickr wrapper for Angular 18/
 
 | ngx-flatpicker | Angular Version | Flatpickr Version |
 | :------------- | :-------------- | :---------------- |
-| **`v18.x.x`**  | `>= 18.0.0`     | `^4.6.13`         |
+| **`v19.x.x`**  | `>= 18.0.0`     | `^4.6.13`         |
 
 ---
 
